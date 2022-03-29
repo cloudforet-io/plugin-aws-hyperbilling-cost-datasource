@@ -1,0 +1,5 @@
+cachetools<5.0
+spaceone-core
+spaceone-api
+schematics
+requests
