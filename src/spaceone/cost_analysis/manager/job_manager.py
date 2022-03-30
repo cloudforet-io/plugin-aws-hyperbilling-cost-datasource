@@ -39,9 +39,9 @@ class JobManager(BaseManager):
                 }
             })
 
-            changed.append({
-                'start': start_time
-            })
+        changed.append({
+            'start': start_time
+        })
 
         _LOGGER.debug(f'[get_tasks] tasks: {tasks}')
         _LOGGER.debug(f'[get_tasks] changed: {changed}')
