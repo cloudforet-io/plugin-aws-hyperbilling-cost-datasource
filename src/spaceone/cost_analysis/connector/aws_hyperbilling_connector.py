@@ -78,7 +78,8 @@ class AWSHyperBillingConnector(BaseConnector):
                 'USAGE_DATE',
                 'REGION',
                 'SERVICE_CODE',
-                'USAGE_TYPE'
+                'USAGE_TYPE',
+                'INSTANCE_TYPE'
             ],
             'Result': [
                 'USAGE_COST',

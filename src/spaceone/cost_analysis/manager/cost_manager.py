@@ -86,8 +86,11 @@ class CostManager(BaseManager):
                     'region_code': _REGION_MAP.get(region, region),
                     'product': result['GroupBy']['SERVICE_CODE'],
                     'account': account,
-                    'usage_type': result['GroupBy']['USAGE_TYPE'],
-                    'billed_at': datetime.strptime(result['GroupBy']['USAGE_DATE'], '%Y-%m-%d')
+                    'usage_type': result['GroupBy']['INSTANCE_TYPE'],
+                    'billed_at': datetime.strptime(result['GroupBy']['USAGE_DATE'], '%Y-%m-%d'),
+                    'additional_info': {
+                        'raw_usage_type': result['GroupBy']['USAGE_TYPE']
+                    }
                 }
             except Exception as e:
                 _LOGGER.error(f'[_make_cost_data] make data error: {e}', exc_info=True)
