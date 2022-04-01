@@ -97,6 +97,8 @@ class AWSHyperBillingConnector(BaseConnector):
         if response.status_code == 200:
             return response.json()
 
+        elif response.status_code == 204:
+            return {}
         else:
             _LOGGER.error(f'[get_cost_data] error code: {response.status_code}')
             try:
