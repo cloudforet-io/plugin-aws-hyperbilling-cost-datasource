@@ -81,7 +81,7 @@ class CostManager(BaseManager):
                 data = {
                     'cost': result['Value']['USAGE_COST'],
                     'currency': 'USD',
-                    'usage_quantity': result['Value']['USAGE_COST'],
+                    'usage_quantity': result['Value']['USAGE_QUANTITY'],
                     'provider': 'aws',
                     'region_code': _REGION_MAP.get(region, region),
                     'product': result['GroupBy']['SERVICE_CODE'],
