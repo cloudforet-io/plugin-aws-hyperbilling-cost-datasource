@@ -111,14 +111,14 @@ class CostManager(BaseManager):
         service_code = cost_info['GroupBy']['SERVICE_CODE']
         usage_type = cost_info['GroupBy']['USAGE_TYPE']
 
-        if service_code == 'AmazonCloudFront':
+        if service_code == 'AWSDataTransfer':
             if usage_type.find('-In-Bytes') > 0:
                 return 'data-transfer.in'
             elif usage_type.find('-Out-Bytes') > 0:
                 return 'data-transfer.out'
             else:
                 return 'data-transfer.etc'
-        elif service_code == 'AWSDataTransfer':
+        elif service_code == 'AmazonCloudFront':
             if usage_type.find('-HTTPS') > 0:
                 return 'requests.https'
             elif usage_type.find('-Out-Bytes') > 0:
