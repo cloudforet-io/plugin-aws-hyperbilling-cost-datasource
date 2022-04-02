@@ -72,8 +72,7 @@ class CostManager(BaseManager):
                 if not next_token:
                     break
 
-    @staticmethod
-    def _make_cost_data(results, account):
+    def _make_cost_data(self, results, account):
         costs_data = []
 
         for result in results:
@@ -87,7 +86,7 @@ class CostManager(BaseManager):
                     'region_code': _REGION_MAP.get(region, region),
                     'product': result['GroupBy']['SERVICE_CODE'],
                     'account': account,
-                    'usage_type': result['GroupBy']['INSTANCE_TYPE'],
+                    'usage_type': self._parse_usage_type(result),
                     'billed_at': datetime.strptime(result['GroupBy']['USAGE_DATE'], '%Y-%m-%d'),
                     'additional_info': {
                         'raw_usage_type': result['GroupBy']['USAGE_TYPE']
