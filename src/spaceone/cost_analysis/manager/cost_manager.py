@@ -1,8 +1,6 @@
 import logging
-import fnmatch
 from datetime import datetime, timedelta
 
-from spaceone.core import utils
 from spaceone.core.manager import BaseManager
 from spaceone.cost_analysis.error import *
 from spaceone.cost_analysis.connector.aws_hyperbilling_connector import AWSHyperBillingConnector
@@ -27,22 +25,22 @@ _REGION_MAP = {
     'EUW3': 'eu-west-3',
     'MES1': 'me-south-1',
     'SAE1': 'sa-east-1',
-    # 'UGW1': 'AWS GovCloud (US-West)',
-    # 'UGE1': 'AWS GovCloud (US-East)',
+    'UGW1': 'AWS GovCloud (US-West)',
+    'UGE1': 'AWS GovCloud (US-East)',
     'USE1': 'us-east-1',
     'USE2': 'us-east-2',
     'USW1': 'us-west-1',
     'USW2': 'us-west-2',
-    # 'AP': 'Hong Kong, Philippines, South Korea, Taiwan, Singapore',
-    'AU': 'APS2',
-    'CA': 'CAN1',
+    'AP': 'Asia Pacific',
+    'AU': 'Australia',
+    'CA': 'Canada',
     # 'EU': 'Europe and Israel',
-    'IN': 'APS3',
-    # 'JP': 'Japan',
-    # 'ME': 'Middle East',
-    # 'SA': 'South America',
-    # 'US': 'United States',
-    # 'ZA': 'South Africa',
+    'IN': 'India',
+    'JP': 'Japan',
+    'ME': 'Middle East',
+    'SA': 'South America',
+    'US': 'United States',
+    'ZA': 'South Africa',
 }
 
 
