@@ -1,4 +1,5 @@
 import logging
+import fnmatch
 from datetime import datetime, timedelta
 
 from spaceone.core import utils
@@ -105,6 +106,28 @@ class CostManager(BaseManager):
             # costs_data.append(cost_data.to_primitive())
 
         return costs_data
+
+    @staticmethod
+    def _parse_usage_type(cost_info):
+        service_code = cost_info['GroupBy']['SERVICE_CODE']
+        usage_type = cost_info['GroupBy']['USAGE_TYPE']
+
+        if service_code == 'AmazonCloudFront':
+            if fnmatch.fnmatch(usage_type, '*-In-Bytes'):
+                return 'data-transfer.in'
+            elif fnmatch.fnmatch(usage_type, '*-Out-Bytes'):
+                return 'data-transfer.out'
+            else:
+                return 'data-transfer.etc'
+        elif service_code == 'AWSDataTransfer':
+            if fnmatch.fnmatch(usage_type, '*-HTTPS'):
+                return 'requests.https'
+            elif fnmatch.fnmatch(usage_type, '*-Out-Bytes'):
+                return 'data-transfer.out'
+            else:
+                return 'requests.http'
+        else:
+            return cost_info['GroupBy']['INSTANCE_TYPE']
 
     @staticmethod
     def _check_task_options(task_options):
