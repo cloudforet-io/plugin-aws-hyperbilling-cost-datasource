@@ -15,7 +15,7 @@ _REGION_MAP = {
     'APN3': 'ap-northeast-3',
     'APS1': 'ap-southeast-1',
     'APS2': 'ap-southeast-2',
-    'APS3': 'ap-southeast-3',
+    'APS3': 'ap-south-1',
     'CAN1': 'ca-central-1',
     'CPT': 'af-south-1',
     'EUN1': 'eu-north-1',
