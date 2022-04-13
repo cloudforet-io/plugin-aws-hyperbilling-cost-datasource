@@ -28,7 +28,7 @@ class JobManager(BaseManager):
             start_time: datetime = datetime.utcnow() - timedelta(days=365)
             start_time = start_time.replace(day=1)
 
-        start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
 
         _LOGGER.debug(f'[get_tasks] linked accounts: {results}')
         tasks = []
