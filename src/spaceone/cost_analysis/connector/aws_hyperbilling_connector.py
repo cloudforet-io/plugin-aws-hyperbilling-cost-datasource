@@ -1,5 +1,6 @@
 import logging
 import requests
+import copy
 
 from spaceone.core.transaction import Transaction
 from spaceone.core.connector import BaseConnector
@@ -22,7 +23,7 @@ class AWSHyperBillingConnector(BaseConnector):
     def __init__(self, transaction: Transaction, config: dict):
         super().__init__(transaction, config)
         self.endpoint = None
-        self.headers = _DEFAULT_HEADERS
+        self.headers = copy.deepcopy(_DEFAULT_HEADERS)
 
     def create_session(self, options: dict, secret_data: dict, schema: str = None) -> None:
         self._check_secret_data(secret_data)
@@ -46,7 +47,7 @@ class AWSHyperBillingConnector(BaseConnector):
         url = f'{self.endpoint}/v1/search/linkedaccount'
         data = {}
 
-        _LOGGER.debug(f'[list_linked_accounts] {url} => {data}')
+        _LOGGER.debug(f'[list_linked_accounts] ({self.headers["X-Client-Id"]}) {url} => {data}')
 
         response = requests.get(url, json=data, headers=self.headers)
 
@@ -90,7 +91,7 @@ class AWSHyperBillingConnector(BaseConnector):
         if next_token:
             data['Filter']['NextDataToken'] = next_token
 
-        _LOGGER.debug(f'[get_cost_data] {url} => {data}')
+        _LOGGER.debug(f'[get_cost_data] ({self.headers["X-Client-Id"]}) {url} => {data}')
 
         response = requests.post(url, json=data, headers=self.headers)
 
