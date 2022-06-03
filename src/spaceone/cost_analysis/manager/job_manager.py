@@ -24,6 +24,7 @@ class JobManager(BaseManager):
             start_time: datetime = start
         elif last_synchronized_at:
             start_time: datetime = last_synchronized_at - timedelta(days=7)
+            start_time = start_time.replace(day=1)
         else:
             start_time: datetime = datetime.utcnow() - timedelta(days=365)
             start_time = start_time.replace(day=1)
