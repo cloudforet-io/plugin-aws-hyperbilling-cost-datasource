@@ -7,7 +7,11 @@ __all__ = ['Tasks']
 
 class TaskOptions(Model):
     start = StringType(required=True)
-    account = StringType(required=True)
+    service_account_id = StringType(required=True)
+    service_account_name = StringType(required=True)
+    account_id = StringType(required=True)
+    database = StringType(required=True)
+    is_sync = StringType(required=True, choices=('true', 'false'))
 
 
 class Task(Model):

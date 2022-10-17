@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from spaceone.core.manager import BaseManager
 from spaceone.cost_analysis.error import *
-from spaceone.cost_analysis.connector.aws_hyperbilling_connector import AWSHyperBillingConnector
+from spaceone.cost_analysis.connector.spaceone_connector import SpaceONEConnector
 from spaceone.cost_analysis.model.cost_model import Cost
 
 _LOGGER = logging.getLogger(__name__)
@@ -48,10 +48,10 @@ class CostManager(BaseManager):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.aws_hb_connector: AWSHyperBillingConnector = self.locator.get_connector('AWSHyperBillingConnector')
+        self.space_connector: SpaceONEConnector = self.locator.get_connector('SpaceONEConnector')
 
     def get_data(self, options, secret_data, schema, task_options):
-        self.aws_hb_connector.create_session(options, secret_data, schema)
+        self.space_connector.init_client(options, secret_data, schema)
         self._check_task_options(task_options)
 
         start = task_options['start']

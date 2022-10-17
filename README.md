@@ -5,17 +5,23 @@ Plugin for collecting AWS HyperBilling data
 
 ## Secret Data
 *Schema*
-* client_id (str): HyperBilling login ID 
-* secret (str): Credentials for authentication
-* endpoint (str): AWS HyperBilling service endpoint 
+* spaceone_endpoint (str): SpaceONE Identity Endpoint 
+* spaceone_api_key (str): Credentials for SpaceONE authentication
+* spaceone_domain_id (str): SpaceONE Billing Domain ID
+* aws_access_key_id (str): AWS Access Key to access HyperBilling data
+* aws_secret_access_key (str): AWS Secret Key to access HyperBilling data
+* s3_bucket (str): S3 Bucket with HyperBilling data
 
 *Example*
 <pre>
 <code>
 {
-    "client_id": "*****",
-    "client_secret": "*****",
-    "endpoint": "https://{url}
+    "spaceone_endpoint": "grpc://identity.spaceone.svc.cluster.local:50051",
+    "spaceone_api_key": "*****",
+    "spaceone_domain_id": "domain-12345678",
+    "aws_access_key_id": "*****",
+    "aws_secret_access_key": "*****",
+    "s3_bucket": "*****"
 }
 </code>
 </pre>

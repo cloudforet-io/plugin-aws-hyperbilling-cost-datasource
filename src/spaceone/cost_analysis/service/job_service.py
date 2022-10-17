@@ -28,7 +28,8 @@ class JobService(BaseService):
                 'secret_data': 'dict',
                 'schema': 'str',
                 'start': 'datetime',
-                'last_synchronized_at': 'datetime'
+                'last_synchronized_at': 'datetime',
+                'domain_id': 'str'
             }
 
         Returns:
@@ -41,5 +42,6 @@ class JobService(BaseService):
         schema = params.get('schema')
         start = params.get('start')
         last_synchronized_at = params.get('last_synchronized_at')
+        domain_id = params['domain_id']
 
-        return self.job_mgr.get_tasks(options, secret_data, schema, start, last_synchronized_at)
+        return self.job_mgr.get_tasks(options, secret_data, schema, start, last_synchronized_at, domain_id)

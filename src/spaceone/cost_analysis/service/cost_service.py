@@ -26,7 +26,8 @@ class CostService(BaseService):
                 'options': 'dict',
                 'secret_data': 'dict',
                 'schema': 'str',
-                'task_options': 'dict'
+                'task_options': 'dict',
+                'domain_id': 'str'
             }
 
         Returns:
