@@ -51,7 +51,7 @@ class AWSS3Connector(BaseConnector):
 
         costs_data = df.to_dict('records')
 
-        _LOGGER.debug(f'[get_cost_data] costs count: {len(costs_data)}')
+        _LOGGER.debug(f'[get_cost_data] costs count({key}): {len(costs_data)}')
 
         # Paginate
         page_count = int(len(costs_data) / _PAGE_SIZE) + 1
