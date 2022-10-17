@@ -1,5 +1,5 @@
 CONNECTORS = {
-    'SSEConnector': {}
+    'SpaceONEConnector': {}
 }
 
 LOG = {
