@@ -24,7 +24,8 @@ class DataSourceService(BaseService):
 
         Args:
             params (dict): {
-                'options': 'dict'
+                'options': 'dict',
+                'domain_id': 'str'
             }
 
         Returns:
@@ -44,7 +45,8 @@ class DataSourceService(BaseService):
             params (dict): {
                 'options': 'dict',
                 'schema': 'str',
-                'secret_data': 'dict'
+                'secret_data': 'dict',
+                'domain_id': 'str'
             }
 
         Returns:
