@@ -33,12 +33,13 @@ class AWSS3Connector(BaseConnector):
         role_arn = secret_data.get('role_arn')
         external_id = secret_data.get('external_id')
 
-        if schema:
-            getattr(self, f'_create_session_{schema}')(aws_access_key_id, aws_secret_access_key,
-                                                       region_name, role_arn, external_id)
-            self.s3_client = self.session.client('s3')
+        if role_arn:
+            self._create_session_aws_assume_role(aws_access_key_id, aws_secret_access_key, region_name,
+                                                 role_arn, external_id)
         else:
-            raise ERROR_REQUIRED_PARAMETER(key='schema')
+            self._create_session_aws_access_key(aws_access_key_id, aws_secret_access_key, region_name)
+
+        self.s3_client = self.session.client('s3')
 
     def list_objects(self, path):
         return self.s3_client.list_objects(Bucket=self.s3_bucket, Prefix=path)
@@ -70,7 +71,7 @@ class AWSS3Connector(BaseConnector):
         if 'aws_s3_bucket' not in secret_data:
             raise ERROR_REQUIRED_PARAMETER(key='secret_data.aws_s3_bucket')
 
-    def _create_session_aws_access_key(self, aws_access_key_id, aws_secret_access_key, region_name, role_arn, external_id):
+    def _create_session_aws_access_key(self, aws_access_key_id, aws_secret_access_key, region_name):
         self.session = boto3.Session(aws_access_key_id=aws_access_key_id,
                                      aws_secret_access_key=aws_secret_access_key,
                                      region_name=region_name)
@@ -79,7 +80,7 @@ class AWSS3Connector(BaseConnector):
         sts.get_caller_identity()
 
     def _create_session_aws_assume_role(self, aws_access_key_id, aws_secret_access_key, region_name, role_arn, external_id):
-        self._create_session_aws_access_key(aws_access_key_id, aws_secret_access_key, region_name, role_arn, external_id)
+        self._create_session_aws_access_key(aws_access_key_id, aws_secret_access_key, region_name)
 
         sts = self.session.client('sts')
 
