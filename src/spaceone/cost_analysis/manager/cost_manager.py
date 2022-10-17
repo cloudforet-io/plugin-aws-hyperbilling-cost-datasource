@@ -1,8 +1,10 @@
 import logging
 from datetime import datetime, timedelta
+from dateutil import rrule
 
 from spaceone.core.manager import BaseManager
 from spaceone.cost_analysis.error import *
+from spaceone.cost_analysis.connector.aws_s3_connector import AWSS3Connector
 from spaceone.cost_analysis.connector.spaceone_connector import SpaceONEConnector
 from spaceone.cost_analysis.model.cost_model import Cost
 
@@ -48,48 +50,96 @@ class CostManager(BaseManager):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.aws_s3_connector: AWSS3Connector = self.locator.get_connector('AWSS3Connector')
         self.space_connector: SpaceONEConnector = self.locator.get_connector('SpaceONEConnector')
 
     def get_data(self, options, secret_data, schema, task_options):
-        self.space_connector.init_client(options, secret_data, schema)
+        self.aws_s3_connector.create_session(options, secret_data, schema)
         self._check_task_options(task_options)
 
         start = task_options['start']
-        account = task_options['account']
+        account_id = task_options['account_id']
+        service_account_id = task_options['service_account_id']
+        database = task_options['database']
+        is_sync = task_options['is_sync']
+
+        if is_sync == 'false':
+            self._update_sync_state(options, secret_data, schema, service_account_id)
+
         date_ranges = self._get_date_range(start)
 
         for date in date_ranges:
-            next_token = None
+            year, month = date.split('-')
+            path = f'SPACE_ONE/billing/database={database}/account_id={account_id}/year={year}/month={month}'
+            response = self.aws_s3_connector.list_objects(path)
+            contents = response.get('Contents', [])
+            for content in contents:
+                response_stream = self.aws_s3_connector.get_cost_data(content['Key'])
+                for results in response_stream:
+                    yield self._make_cost_data(results, account_id)
 
-            while True:
-                response = self.aws_hb_connector.get_cost_data(account, date['start'], date['end'], next_token)
-                next_token = response.get('NextDataToken')
-                results = response.get('Results', [])
-                yield self._make_cost_data(results, account)
+        yield []
 
-                if not next_token:
-                    break
+    def _update_sync_state(self, options, secret_data, schema, service_account_id):
+        self.space_connector.init_client(options, secret_data, schema)
+        service_account_info = self.space_connector.get_service_account(service_account_id)
+        tags = service_account_info.get('tags', {})
+        tags['is_sync'] = 'true'
+        self.space_connector.update_service_account(service_account_id, tags)
 
-    def _make_cost_data(self, results, account):
+    def _make_cost_data(self, results, account_id):
         costs_data = []
+
+        """ Source Data Model
+        class CostSummaryItem(BaseModel):
+            usage_date: str
+            region: str
+            service_code: str
+            usage_type: str
+            instance_type: str
+            tag_application: str
+            tag_environment: str
+            tag_name: str
+            tag_role: str
+            tag_service: str
+            usage_quantity: float
+            usage_cost: float
+        """
 
         for result in results:
             try:
-                region = result['GroupBy']['REGION'] or 'USE1'
+                region = result['region'] or 'USE1'
                 data = {
-                    'cost': result['Value']['USAGE_COST'],
+                    'cost': result['usage_cost'],
                     'currency': 'USD',
-                    'usage_quantity': result['Value']['USAGE_QUANTITY'],
+                    'usage_quantity': result['usage_quantity'],
                     'provider': 'aws',
                     'region_code': _REGION_MAP.get(region, region),
-                    'product': result['GroupBy']['SERVICE_CODE'],
-                    'account': account,
+                    'product': result['service_code'],
+                    'account': account_id,
                     'usage_type': self._parse_usage_type(result),
-                    'billed_at': datetime.strptime(result['GroupBy']['USAGE_DATE'], '%Y-%m-%d'),
+                    'billed_at': datetime.strptime(result['usage_date'], '%Y-%m-%d'),
                     'additional_info': {
-                        'raw_usage_type': result['GroupBy']['USAGE_TYPE']
-                    }
+                        'raw_usage_type': result['usage_type']
+                    },
+                    'tags': {}
                 }
+
+                if result['tag_application'] is not None:
+                    data['tags']['Application'] = result['tag_application']
+
+                if result['tag_environment'] is not None:
+                    data['tags']['Environment'] = result['tag_environment']
+
+                if result['tag_name'] is not None:
+                    data['tags']['Name'] = result['tag_name']
+
+                if result['tag_role'] is not None:
+                    data['tags']['Role'] = result['tag_role']
+
+                if result['tag_service'] is not None:
+                    data['tags']['Service'] = result['tag_service']
+
             except Exception as e:
                 _LOGGER.error(f'[_make_cost_data] make data error: {e}', exc_info=True)
                 raise e
@@ -106,8 +156,8 @@ class CostManager(BaseManager):
 
     @staticmethod
     def _parse_usage_type(cost_info):
-        service_code = cost_info['GroupBy']['SERVICE_CODE']
-        usage_type = cost_info['GroupBy']['USAGE_TYPE']
+        service_code = cost_info['service_code']
+        usage_type = cost_info['usage_type']
 
         if service_code == 'AWSDataTransfer':
             if usage_type.find('-In-Bytes') > 0:
@@ -124,38 +174,32 @@ class CostManager(BaseManager):
             else:
                 return 'requests.http'
         else:
-            return cost_info['GroupBy']['INSTANCE_TYPE']
+            return cost_info['instance_type']
 
     @staticmethod
     def _check_task_options(task_options):
         if 'start' not in task_options:
             raise ERROR_REQUIRED_PARAMETER(key='task_options.start')
 
-        if 'account' not in task_options:
-            raise ERROR_REQUIRED_PARAMETER(key='task_options.account')
+        if 'account_id' not in task_options:
+            raise ERROR_REQUIRED_PARAMETER(key='task_options.account_id')
+
+        if 'service_account_id' not in task_options:
+            raise ERROR_REQUIRED_PARAMETER(key='task_options.service_account_id')
+
+        if 'database' not in task_options:
+            raise ERROR_REQUIRED_PARAMETER(key='task_options.database')
+
+        if 'is_sync' not in task_options:
+            raise ERROR_REQUIRED_PARAMETER(key='task_options.is_sync')
 
     @staticmethod
     def _get_date_range(start):
+        date_ranges = []
         start_time = datetime.strptime(start, '%Y-%m-%d')
         now = datetime.utcnow()
-        end_time = start_time + timedelta(days=30)
-
-        date_ranges = []
-
-        while True:
-            if end_time > now:
-                date_ranges.append({
-                    'start': start_time.strftime('%Y-%m-%d'),
-                    'end': now.strftime('%Y-%m-%d')
-                })
-                break
-
-            date_ranges.append({
-                'start': start_time.strftime('%Y-%m-%d'),
-                'end': end_time.strftime('%Y-%m-%d')
-            })
-
-            start_time = start_time + timedelta(days=31)
-            end_time = start_time + timedelta(days=30)
+        for dt in rrule.rrule(rrule.MONTHLY, dtstart=start_time, until=now):
+            billed_month = dt.strftime('%Y-%m')
+            date_ranges.append(billed_month)
 
         return date_ranges

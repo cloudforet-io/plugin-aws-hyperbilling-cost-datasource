@@ -1,2 +1,2 @@
-from spaceone.cost_analysis.connector.aws_hyperbilling_connector import AWSHyperBillingConnector
 from spaceone.cost_analysis.connector.spaceone_connector import SpaceONEConnector
+from spaceone.cost_analysis.connector.aws_s3_connector import AWSS3Connector

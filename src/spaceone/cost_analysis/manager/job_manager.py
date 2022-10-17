@@ -20,7 +20,7 @@ class JobManager(BaseManager):
         changed = []
 
         start_time = self._get_start_time(start, last_synchronized_at)
-        start_date = start_time.strftime('%Y-%m')
+        start_date = start_time.strftime('%Y-%m-%d')
         changed_time = start_time
         self.space_connector.init_client(options, secret_data, schema)
         response = self.space_connector.list_projects(domain_id)
@@ -54,7 +54,7 @@ class JobManager(BaseManager):
 
                 if is_sync == 'false':
                     first_sync_time = self._get_start_time(start)
-                    task_options['start'] = first_sync_time.strftime('%Y-%m')
+                    task_options['start'] = first_sync_time.strftime('%Y-%m-%d')
                     if first_sync_time < changed_time:
                         changed_time = first_sync_time
                 else:

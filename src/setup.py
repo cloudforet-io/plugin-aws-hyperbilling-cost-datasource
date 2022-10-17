@@ -35,6 +35,9 @@ setup(
         'spaceone-api',
         'schematics',
         'requests',
+        'boto3',
+        'pyarrow',
+        'pandas'
     ],
     zip_safe=False,
 )

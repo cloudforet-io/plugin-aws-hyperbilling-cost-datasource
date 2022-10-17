@@ -10,7 +10,8 @@ Plugin for collecting AWS HyperBilling data
 * spaceone_domain_id (str): SpaceONE Billing Domain ID
 * aws_access_key_id (str): AWS Access Key to access HyperBilling data
 * aws_secret_access_key (str): AWS Secret Key to access HyperBilling data
-* s3_bucket (str): S3 Bucket with HyperBilling data
+* aws_region (str): AWS Region to access HyperBilling data
+* aws_s3_bucket (str): S3 Bucket with HyperBilling data
 
 *Example*
 <pre>
@@ -21,7 +22,8 @@ Plugin for collecting AWS HyperBilling data
     "spaceone_domain_id": "domain-12345678",
     "aws_access_key_id": "*****",
     "aws_secret_access_key": "*****",
-    "s3_bucket": "*****"
+    "aws_region": "ap-northeast-2",
+    "aws_s3_bucket": "*****"
 }
 </code>
 </pre>

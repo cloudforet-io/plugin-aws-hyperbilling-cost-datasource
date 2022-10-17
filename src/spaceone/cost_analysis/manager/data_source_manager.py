@@ -3,6 +3,7 @@ import logging
 from spaceone.core.manager import BaseManager
 from spaceone.cost_analysis.model.data_source_model import PluginMetadata
 from spaceone.cost_analysis.connector.spaceone_connector import SpaceONEConnector
+from spaceone.cost_analysis.connector.aws_s3_connector import AWSS3Connector
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,3 +23,6 @@ class DataSourceManager(BaseManager):
         space_connector: SpaceONEConnector = self.locator.get_connector('SpaceONEConnector')
         space_connector.init_client(options, secret_data, schema)
         space_connector.verify_plugin()
+
+        aws_s3_connector: AWSS3Connector = self.locator.get_connector('AWSS3Connector')
+        aws_s3_connector.create_session(options, secret_data, schema)

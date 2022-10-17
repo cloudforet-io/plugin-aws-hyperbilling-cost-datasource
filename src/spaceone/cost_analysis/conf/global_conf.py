@@ -1,5 +1,6 @@
 CONNECTORS = {
-    'SpaceONEConnector': {}
+    'SpaceONEConnector': {},
+    'AWSS3Connector': {}
 }
 
 LOG = {

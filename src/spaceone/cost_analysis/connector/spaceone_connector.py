@@ -42,6 +42,25 @@ class SpaceONEConnector(BaseConnector):
         message = self.client.Project.list(params, metadata=self._get_metadata())
         return self._change_message(message)
 
+    def get_service_account(self, service_account_id):
+        params = {
+            'service_account_id': service_account_id,
+            'domain_id': self.billing_domain_id
+        }
+
+        message = self.client.ServiceAccount.update(params, metadata=self._get_metadata())
+        return self._change_message(message)
+
+    def update_service_account(self, service_account_id, tags):
+        params = {
+            'service_account_id': service_account_id,
+            'tags': tags,
+            'domain_id': self.billing_domain_id
+        }
+
+        message = self.client.ServiceAccount.update(params, metadata=self._get_metadata())
+        return self._change_message(message)
+
     def list_service_accounts(self, project_id: str):
         params = {
             'provider': 'aws',
