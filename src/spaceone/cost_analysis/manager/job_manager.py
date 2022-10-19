@@ -39,6 +39,7 @@ class JobManager(BaseManager):
                 service_account_name = service_account_info['name']
                 account_id = service_account_info['data']['account_id']
                 is_sync = service_account_info['tags'].get('is_sync', 'false')
+                database = service_account_info['tags'].get('database', database)
 
                 if is_sync != 'true':
                     is_sync = 'false'
@@ -55,8 +56,13 @@ class JobManager(BaseManager):
                 if is_sync == 'false':
                     first_sync_time = self._get_start_time(start)
                     task_options['start'] = first_sync_time.strftime('%Y-%m-%d')
-                    if first_sync_time < changed_time:
-                        changed_time = first_sync_time
+
+                    changed.append({
+                        'start': first_sync_time,
+                        'filter': {
+                            'account': account_id
+                        }
+                    })
                 else:
                     task_options['start'] = start_date
 

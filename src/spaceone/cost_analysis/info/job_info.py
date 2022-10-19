@@ -22,6 +22,9 @@ def ChangedInfo(changed_data):
     if 'end' in changed_data:
         info['end'] = changed_data['end']
 
+    if 'filter' in changed_data:
+        info['filter'] = change_struct_type(changed_data['filter'])
+
     return job_pb2.ChangedInfo(**info)
 
 
