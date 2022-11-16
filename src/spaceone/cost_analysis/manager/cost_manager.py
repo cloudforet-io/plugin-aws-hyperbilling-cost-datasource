@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from dateutil import rrule
 
+from spaceone.core import utils
 from spaceone.core.manager import BaseManager
 from spaceone.cost_analysis.error import *
 from spaceone.cost_analysis.connector.aws_s3_connector import AWSS3Connector
@@ -122,23 +123,29 @@ class CostManager(BaseManager):
                     'additional_info': {
                         'raw_usage_type': result['usage_type']
                     },
-                    'tags': {}
+                    'tags': self._get_tags_from_cost_data(result)
                 }
 
-                if result['tag_application'] is not None:
-                    data['tags']['Application'] = result['tag_application']
+                tag_application = result.get('tag_application')
+                tag_environment = result.get('tag_environment')
+                tag_name = result.get('tag_name')
+                tag_role = result.get('tag_role')
+                tag_service = result.get('tag_service')
 
-                if result['tag_environment'] is not None:
-                    data['tags']['Environment'] = result['tag_environment']
+                if tag_application:
+                    data['tags']['Application'] = tag_application
 
-                if result['tag_name'] is not None:
-                    data['tags']['Name'] = result['tag_name']
+                if tag_environment:
+                    data['tags']['Environment'] = tag_environment
 
-                if result['tag_role'] is not None:
-                    data['tags']['Role'] = result['tag_role']
+                if tag_name:
+                    data['tags']['Name'] = tag_name
 
-                if result['tag_service'] is not None:
-                    data['tags']['Service'] = result['tag_service']
+                if tag_role:
+                    data['tags']['Role'] = tag_role
+
+                if tag_service:
+                    data['tags']['Service'] = tag_service
 
             except Exception as e:
                 _LOGGER.error(f'[_make_cost_data] make data error: {e}', exc_info=True)
@@ -153,6 +160,36 @@ class CostManager(BaseManager):
             # costs_data.append(cost_data.to_primitive())
 
         return costs_data
+
+    @staticmethod
+    def _get_tags_from_cost_data(cost_data: dict) -> dict:
+        tags = {}
+
+        if tags_str := cost_data.get('tags'):
+            try:
+                tags_dict: dict = utils.load_json(tags_str)
+                for key, value in tags_dict.items():
+                    key = key.replace('user:', '')
+                    tags[key] = value
+            except Exception as e:
+                _LOGGER.debug(e)
+
+        if tag_application := cost_data.get('tag_application'):
+            tags['Application'] = tag_application
+
+        if tag_environment := cost_data.get('tag_environment'):
+            tags['Environment'] = tag_environment
+
+        if tag_name := cost_data.get('tag_name'):
+            tags['Name'] = tag_name
+
+        if tag_role := cost_data.get('tag_role'):
+            tags['Role'] = tag_role
+
+        if tag_service := cost_data.get('tag_service'):
+            tags['Service'] = tag_service
+
+        return tags
 
     @staticmethod
     def _parse_usage_type(cost_info):
