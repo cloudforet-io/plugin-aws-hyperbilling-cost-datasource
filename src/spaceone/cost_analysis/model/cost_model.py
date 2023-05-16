@@ -13,7 +13,7 @@ class Cost(Model):
     product = StringType()
     account = StringType(required=True)
     usage_type = StringType()
-    usage_unit = StringType(default=None, null=True)
+    usage_unit = StringType(default=None)
     billed_at = DateTimeType(required=True)
     additional_info = DictType(StringType, default={})
     tags = DictType(StringType, default={})
