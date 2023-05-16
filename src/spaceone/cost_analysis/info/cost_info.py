@@ -21,7 +21,7 @@ def CostInfo(cost_data):
             'product': cost_data.get('product'),
             'account': cost_data.get('account'),
             'usage_type': cost_data.get('usage_type'),
-            'resource_group': cost_data.get('resource_group'),
+            'usage_unit': cost_data.get('usage_unit'),
             'resource': cost_data.get('resource'),
             'tags': change_struct_type(cost_data['tags']) if 'tags' in cost_data else None,
             'additional_info': change_struct_type(cost_data['additional_info']) if 'additional_info' in cost_data else None,

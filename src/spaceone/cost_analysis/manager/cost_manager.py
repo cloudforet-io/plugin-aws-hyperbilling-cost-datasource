@@ -97,6 +97,7 @@ class CostManager(BaseManager):
             region: str
             service_code: str
             usage_type: str
+            usage_unit: str
             instance_type: str
             tag_application: str
             tag_environment: str
@@ -118,10 +119,11 @@ class CostManager(BaseManager):
                     'region_code': _REGION_MAP.get(region, region),
                     'product': result['service_code'],
                     'account': account_id,
-                    'usage_type': self._parse_usage_type(result),
+                    'usage_type': result['usage_type'],
+                    'usage_unit': None,
                     'billed_at': datetime.strptime(result['usage_date'], '%Y-%m-%d'),
                     'additional_info': {
-                        'raw_usage_type': result['usage_type']
+                        'Instance Type': self._parse_usage_type(result)
                     },
                     'tags': self._get_tags_from_cost_data(result)
                 }
