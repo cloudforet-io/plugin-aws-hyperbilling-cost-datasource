@@ -13,6 +13,7 @@ def CostInfo(cost_data):
     try:
         info = {
             'cost': cost_data['cost'],
+            'usd_cost': cost_data['cost'],
             'currency': cost_data['currency'],
             'usage_quantity': cost_data.get('usage_quantity'),
             'provider': cost_data.get('provider'),
