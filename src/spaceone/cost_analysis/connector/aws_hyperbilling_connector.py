@@ -20,8 +20,8 @@ _DEFAULT_HEADERS = {
 
 class AWSHyperBillingConnector(BaseConnector):
 
-    def __init__(self, transaction: Transaction, config: dict):
-        super().__init__(transaction, config)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.endpoint = None
         self.headers = copy.deepcopy(_DEFAULT_HEADERS)
 
