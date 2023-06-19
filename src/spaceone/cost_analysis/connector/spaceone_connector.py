@@ -1,9 +1,11 @@
 import logging
+import re
+import requests
+from requests import HTTPError
 from google.protobuf.json_format import MessageToDict
 
+from spaceone.core.connector.space_connector import SpaceConnector
 from spaceone.core.connector import BaseConnector
-from spaceone.core.utils import parse_grpc_endpoint
-from spaceone.core import pygrpc
 from spaceone.cost_analysis.error import *
 
 __all__ = ['SpaceONEConnector']
@@ -15,19 +17,29 @@ class SpaceONEConnector(BaseConnector):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.client = None
+        self.grpc_client = None
         self.token = None
         self.billing_domain_id = None
+        self.protocol = None
+        self.endpoint = None
 
     def init_client(self, options: dict, secret_data: dict, schema: str = None) -> None:
         self._check_secret_data(secret_data)
-        e = parse_grpc_endpoint(secret_data['spaceone_endpoint'])
-        self.client = pygrpc.client(endpoint=e['endpoint'], ssl_enabled=e['ssl_enabled'])
+        spaceone_endpoint = secret_data['spaceone_endpoint']
+
+        if spaceone_endpoint.startswith('http') or spaceone_endpoint.startswith('https'):
+            self.protocol = 'http'
+            self.endpoint = spaceone_endpoint
+        elif spaceone_endpoint.startswith('grpc') or spaceone_endpoint.startswith('grpc+ssl'):
+            self.protocol = 'grpc'
+            self.grpc_client: SpaceConnector = SpaceConnector(endpoint=spaceone_endpoint, token=self.token)
+
         self.token = secret_data['spaceone_api_key']
         self.billing_domain_id = secret_data['spaceone_domain_id']
 
     def verify_plugin(self):
-        self.client.Domain.get({'domain_id': self.billing_domain_id}, metadata=self._get_metadata())
+        method = 'Domain.get'
+        self.dispatch(method, {'domain_id': self.billing_domain_id})
 
     def list_projects(self, domain_id: str):
         params = {
@@ -39,8 +51,7 @@ class SpaceONEConnector(BaseConnector):
             'domain_id': self.billing_domain_id
         }
 
-        message = self.client.Project.list(params, metadata=self._get_metadata())
-        return self._change_message(message)
+        return self.dispatch('Project.list', params)
 
     def get_service_account(self, service_account_id):
         params = {
@@ -48,8 +59,7 @@ class SpaceONEConnector(BaseConnector):
             'domain_id': self.billing_domain_id
         }
 
-        message = self.client.ServiceAccount.update(params, metadata=self._get_metadata())
-        return self._change_message(message)
+        return self.dispatch('ServiceAccount.update', params)
 
     def update_service_account(self, service_account_id, tags):
         params = {
@@ -58,8 +68,7 @@ class SpaceONEConnector(BaseConnector):
             'domain_id': self.billing_domain_id
         }
 
-        message = self.client.ServiceAccount.update(params, metadata=self._get_metadata())
-        return self._change_message(message)
+        return self.dispatch('ServiceAccount.update', params)
 
     def list_service_accounts(self, project_id: str):
         params = {
@@ -69,11 +78,43 @@ class SpaceONEConnector(BaseConnector):
             'domain_id': self.billing_domain_id
         }
 
-        message = self.client.ServiceAccount.list(params, metadata=self._get_metadata())
-        return self._change_message(message)
+        return self.dispatch('ServiceAccount.list', params)
 
     def _get_metadata(self):
         return ('token', self.token),
+
+    def dispatch(self, method: str = None, params: dict = None, **kwargs):
+        if self.protocol == 'grpc':
+            return self.grpc_client.dispatch(method, params, **kwargs)
+        else:
+            return self.request(method, params, **kwargs)
+
+    def request(self, method, params, **kwargs):
+        method = self._convert_method_to_snake_case(method)
+        url = f'{self.endpoint}/{method}'
+
+        headers = self._make_request_header(self.token, **kwargs)
+        response = requests.post(url, json=params, headers=headers)
+
+        if response.status_code >= 400:
+            raise HTTPError(f'HTTP {response.status_code} Error: {response.json()["detail"]}')
+
+        return response.json()
+
+    @staticmethod
+    def _convert_method_to_snake_case(method):
+        method = re.sub(r'(?<!^)(?=[A-Z])', '_', method)
+        method = method.replace('.', '/').replace('_', '-').lower()
+        return method
+
+    @staticmethod
+    def _make_request_header(token, **kwargs):
+        access_token = token
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json',
+        }
+        return headers
 
     @staticmethod
     def _change_message(message):
