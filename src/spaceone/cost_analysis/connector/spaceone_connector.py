@@ -26,6 +26,8 @@ class SpaceONEConnector(BaseConnector):
     def init_client(self, options: dict, secret_data: dict, schema: str = None) -> None:
         self._check_secret_data(secret_data)
         spaceone_endpoint = secret_data['spaceone_endpoint']
+        self.billing_domain_id = secret_data['spaceone_domain_id']
+        self.token = secret_data['spaceone_api_key']
 
         if spaceone_endpoint.startswith('http') or spaceone_endpoint.startswith('https'):
             self.protocol = 'http'
@@ -33,9 +35,6 @@ class SpaceONEConnector(BaseConnector):
         elif spaceone_endpoint.startswith('grpc') or spaceone_endpoint.startswith('grpc+ssl'):
             self.protocol = 'grpc'
             self.grpc_client: SpaceConnector = SpaceConnector(endpoint=spaceone_endpoint, token=self.token)
-
-        self.token = secret_data['spaceone_api_key']
-        self.billing_domain_id = secret_data['spaceone_domain_id']
 
     def verify_plugin(self):
         method = 'Domain.get'
