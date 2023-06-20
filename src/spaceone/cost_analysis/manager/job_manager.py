@@ -24,7 +24,7 @@ class JobManager(BaseManager):
         changed_time = start_time
         self.space_connector.init_client(options, secret_data, schema)
         response = self.space_connector.list_projects(domain_id)
-        total_count = response.get('total_count', 0)
+        total_count = response.get('total_count') or 0
 
         if total_count > 0:
             project_info = response['results'][0]
