@@ -93,12 +93,16 @@ class SpaceONEConnector(BaseConnector):
         url = f'{self.endpoint}/{method}'
 
         headers = self._make_request_header(self.token, **kwargs)
+
+        _LOGGER.debug(f'[request] url: {url}')
         response = requests.post(url, json=params, headers=headers)
 
         if response.status_code >= 400:
             raise HTTPError(f'HTTP {response.status_code} Error: {response.json()["detail"]}')
 
-        return response.json()
+        response = response.json()
+        _LOGGER.debug(f'[response] {response}')
+        return response
 
     @staticmethod
     def _convert_method_to_snake_case(method):
