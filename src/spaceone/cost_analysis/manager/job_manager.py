@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 
+from spaceone.core.error import *
 from spaceone.core.manager import BaseManager
 from spaceone.cost_analysis.connector.spaceone_connector import SpaceONEConnector
 from spaceone.cost_analysis.model.job_model import Tasks
@@ -19,9 +20,7 @@ class JobManager(BaseManager):
         tasks = []
         changed = []
 
-        start_time = self._get_start_time(start, last_synchronized_at)
-        start_date = start_time.strftime('%Y-%m-%d')
-        changed_time = start_time
+        start_month = self._get_start_month(start, last_synchronized_at)
         self.space_connector.init_client(options, secret_data, schema)
         response = self.space_connector.list_projects(domain_id)
         total_count = response.get('total_count') or 0
@@ -44,7 +43,8 @@ class JobManager(BaseManager):
                 if is_sync != 'true':
                     is_sync = 'false'
 
-                _LOGGER.debug(f'[get_tasks] service_account({service_account_id}): name={service_account_name}, account_id={account_id}')
+                _LOGGER.debug(f'[get_tasks] service_account({service_account_id}): '
+                              f'name={service_account_name}, account_id={account_id}')
                 task_options = {
                     'is_sync': is_sync,
                     'service_account_id': service_account_id,
@@ -54,22 +54,22 @@ class JobManager(BaseManager):
                 }
 
                 if is_sync == 'false':
-                    first_sync_time = self._get_start_time(start)
-                    task_options['start'] = first_sync_time.strftime('%Y-%m-%d')
+                    first_sync_month = self._get_start_month(start)
+                    task_options['start'] = first_sync_month
 
                     changed.append({
-                        'start': first_sync_time,
+                        'start': first_sync_month,
                         'filter': {
-                            'account': account_id
+                            'additional_info.Account ID': account_id
                         }
                     })
                 else:
-                    task_options['start'] = start_date
+                    task_options['start'] = start_month
 
                 tasks.append({'task_options': task_options})
 
             changed.append({
-                'start': changed_time
+                'start': start_month
             })
 
             _LOGGER.debug(f'[get_tasks] tasks: {tasks}')
@@ -88,11 +88,9 @@ class JobManager(BaseManager):
             'changed': changed
         }
 
-    @staticmethod
-    def _get_start_time(start, last_synchronized_at=None):
-
+    def _get_start_month(self, start, last_synchronized_at=None):
         if start:
-            start_time: datetime = start
+            start_time: datetime = self._parse_start_time(start)
         elif last_synchronized_at:
             start_time: datetime = last_synchronized_at - timedelta(days=7)
             start_time = start_time.replace(day=1)
@@ -102,4 +100,13 @@ class JobManager(BaseManager):
 
         start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
 
-        return start_time
+        return start_time.strftime('%Y-%m')
+
+    @staticmethod
+    def _parse_start_time(start_str):
+        date_format = '%Y-%m'
+
+        try:
+            return datetime.strptime(start_str, date_format)
+        except Exception as e:
+            raise ERROR_INVALID_PARAMETER_TYPE(key='start', type=date_format)

@@ -6,7 +6,7 @@ __all__ = ['Tasks']
 
 
 class TaskOptions(Model):
-    start = StringType(required=True)
+    start = StringType(required=True, max_length=7)
     service_account_id = StringType(required=True)
     service_account_name = StringType(required=True)
     account_id = StringType(required=True)
@@ -19,8 +19,8 @@ class Task(Model):
 
 
 class Changed(Model):
-    start = DateTimeType(required=True)
-    end = DateTimeType(default=None)
+    start = StringType(required=True, max_length=7)
+    end = StringType(default=None, max_length=7)
     filter = DictType(StringType, default={})
 
 

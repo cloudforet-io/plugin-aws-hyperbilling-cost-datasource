@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil import rrule
 
 from spaceone.core import utils
@@ -111,43 +111,44 @@ class CostManager(BaseManager):
         for result in results:
             try:
                 region = result['region'] or 'USE1'
+                service_code = result['service_code']
+                usage_type = result['usage_type']
                 data = {
                     'cost': result['usage_cost'],
-                    'currency': 'USD',
                     'usage_quantity': result['usage_quantity'],
+                    'usage_unit': None,
                     'provider': 'aws',
                     'region_code': _REGION_MAP.get(region, region),
-                    'product': result['service_code'],
-                    'account': account_id,
-                    'usage_type': result['usage_type'],
-                    'usage_unit': None,
-                    'billed_at': datetime.strptime(result['usage_date'], '%Y-%m-%d'),
+                    'product': service_code,
+                    'usage_type': usage_type,
+                    'billed_date': result['usage_date'],
                     'additional_info': {
-                        'Instance Type': self._parse_usage_type(result)
+                        'Instance Type': result['instance_type'],
+                        'Account ID': account_id
                     },
                     'tags': self._get_tags_from_cost_data(result)
                 }
 
-                tag_application = result.get('tag_application')
-                tag_environment = result.get('tag_environment')
-                tag_name = result.get('tag_name')
-                tag_role = result.get('tag_role')
-                tag_service = result.get('tag_service')
-
-                if tag_application:
-                    data['tags']['Application'] = tag_application
-
-                if tag_environment:
-                    data['tags']['Environment'] = tag_environment
-
-                if tag_name:
-                    data['tags']['Name'] = tag_name
-
-                if tag_role:
-                    data['tags']['Role'] = tag_role
-
-                if tag_service:
-                    data['tags']['Service'] = tag_service
+                if service_code == 'AWSDataTransfer':
+                    data['usage_unit'] = 'Bytes'
+                    if usage_type.find('-In-Bytes') > 0:
+                        data['additional_info']['Usage Type Details'] = 'Transfer In'
+                    elif usage_type.find('-Out-Bytes') > 0:
+                        data['additional_info']['Usage Type Details'] = 'Transfer Out'
+                    else:
+                        data['additional_info']['Usage Type Details'] = 'Transfer Etc'
+                elif service_code == 'AmazonCloudFront':
+                    if usage_type.find('-HTTPS') > 0:
+                        data['usage_unit'] = 'Count'
+                        data['additional_info']['Usage Type Details'] = 'HTTPS Requests'
+                    elif usage_type.find('-Out-Bytes') > 0:
+                        data['usage_unit'] = 'Bytes'
+                        data['additional_info']['Usage Type Details'] = 'Transfer Out'
+                    else:
+                        data['usage_unit'] = 'Count'
+                        data['additional_info']['Usage Type Details'] = 'HTTP Requests'
+                else:
+                    data['additional_info']['Usage Type Details'] = None
 
             except Exception as e:
                 _LOGGER.error(f'[_make_cost_data] make data error: {e}', exc_info=True)
@@ -176,44 +177,7 @@ class CostManager(BaseManager):
             except Exception as e:
                 _LOGGER.debug(e)
 
-        if tag_application := cost_data.get('tag_application'):
-            tags['Application'] = tag_application
-
-        if tag_environment := cost_data.get('tag_environment'):
-            tags['Environment'] = tag_environment
-
-        if tag_name := cost_data.get('tag_name'):
-            tags['Name'] = tag_name
-
-        if tag_role := cost_data.get('tag_role'):
-            tags['Role'] = tag_role
-
-        if tag_service := cost_data.get('tag_service'):
-            tags['Service'] = tag_service
-
         return tags
-
-    @staticmethod
-    def _parse_usage_type(cost_info):
-        service_code = cost_info['service_code']
-        usage_type = cost_info['usage_type']
-
-        if service_code == 'AWSDataTransfer':
-            if usage_type.find('-In-Bytes') > 0:
-                return 'data-transfer.in'
-            elif usage_type.find('-Out-Bytes') > 0:
-                return 'data-transfer.out'
-            else:
-                return 'data-transfer.etc'
-        elif service_code == 'AmazonCloudFront':
-            if usage_type.find('-HTTPS') > 0:
-                return 'requests.https'
-            elif usage_type.find('-Out-Bytes') > 0:
-                return 'data-transfer.out'
-            else:
-                return 'requests.http'
-        else:
-            return cost_info['instance_type']
 
     @staticmethod
     def _check_task_options(task_options):
@@ -235,7 +199,7 @@ class CostManager(BaseManager):
     @staticmethod
     def _get_date_range(start):
         date_ranges = []
-        start_time = datetime.strptime(start, '%Y-%m-%d')
+        start_time = datetime.strptime(start, '%Y-%m')
         now = datetime.utcnow()
         for dt in rrule.rrule(rrule.MONTHLY, dtstart=start_time, until=now):
             billed_month = dt.strftime('%Y-%m')
