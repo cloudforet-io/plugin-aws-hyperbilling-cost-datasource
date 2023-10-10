@@ -27,7 +27,7 @@ jobs:
       - name: set version with current date
         id: versioning
         run: |
-          echo "::set-output name=VERSION::$(cat src/VERSION | cut -c 2-).${{ env.TIME }}"
+          echo "VERSION=$(cat src/VERSION | cut -c 2-).${{ env.TIME }}" >> $GITHUB_OUTPUT
       - name: Notice when job fails
         if: failure()
         uses: 8398a7/action-slack@v3.2.0
@@ -66,18 +66,20 @@ jobs:
   scan:
     needs: [versioning, docker]
     runs-on: ubuntu-20.04
+    env:
+      VERSION: ${{ needs.versioning.outputs.version }}
     steps:
       - name: Run Trivy vulnerability scanner
         id: trivy-scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: pyengine/${{ github.event.repository.name }}:${{ needs.versioning.outputs.version }}
+          image-ref: pyengine/${{ github.event.repository.name }}:${{ env.VERSION }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-          
+
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         with:
@@ -111,7 +113,7 @@ jobs:
                   "fields": [
                     {
                       "type": "mrkdwn",
-                      "text": "*Image:*\npyengine/${{ github.event.repository.name }}:${{ needs.versioning.outputs.version }}"
+                      "text": "*Image:*\npyengine/${{ github.event.repository.name }}:${{ env.VERSION }}"
                     },
                     {
                       "type": "mrkdwn",
@@ -137,7 +139,7 @@ jobs:
               ]
             }
         env:
-          SLACK_WEBHOOK_URL: ${{secrets.VULNERABILITY_SLACK_WEBHOOK_URL}} 
+          SLACK_WEBHOOK_URL: ${{secrets.VULNERABILITY_SLACK_WEBHOOK_URL}}
 
   notification:
     runs-on: ubuntu-latest
