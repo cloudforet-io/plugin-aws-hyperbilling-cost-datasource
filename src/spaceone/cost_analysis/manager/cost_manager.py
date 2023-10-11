@@ -142,7 +142,7 @@ class CostManager(BaseManager):
                         data['usage_unit'] = 'Count'
                         data['additional_info']['Usage Type Details'] = 'HTTPS Requests'
                     elif usage_type.find('-Out-Bytes') > 0:
-                        data['usage_unit'] = 'Bytes'
+                        data['usage_unit'] = 'GB'
                         data['additional_info']['Usage Type Details'] = 'Transfer Out'
                     else:
                         data['usage_unit'] = 'Count'
