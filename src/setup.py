@@ -33,7 +33,8 @@ setup(
     install_requires=[
         'spaceone-core',
         'spaceone-api',
-        'spaceone-cost-analysis'
+        'spaceone-cost-analysis',
+        'pyarrow'
     ],
     zip_safe=False,
 )
