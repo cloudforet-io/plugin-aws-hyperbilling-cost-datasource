@@ -1,13 +1,13 @@
 import logging
+from typing import Generator
 from datetime import datetime
 from dateutil import rrule
 
 from spaceone.core import utils
 from spaceone.core.manager import BaseManager
-from spaceone.cost_analysis.error import *
-from spaceone.cost_analysis.connector.aws_s3_connector import AWSS3Connector
-from spaceone.cost_analysis.connector.spaceone_connector import SpaceONEConnector
-from spaceone.cost_analysis.model.cost_model import Cost
+from spaceone.core.error import *
+from ..connector.aws_s3_connector import AWSS3Connector
+from ..connector.spaceone_connector import SpaceONEConnector
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,10 +51,11 @@ class CostManager(BaseManager):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.aws_s3_connector: AWSS3Connector = self.locator.get_connector('AWSS3Connector')
-        self.space_connector: SpaceONEConnector = self.locator.get_connector('SpaceONEConnector')
+        self.aws_s3_connector = AWSS3Connector()
+        self.space_connector = SpaceONEConnector()
 
-    def get_data(self, options, secret_data, schema, task_options):
+    def get_data(self, options: dict, secret_data: dict, task_options: dict, schema: str = None) \
+            -> Generator[dict, None, None]:
         self.aws_s3_connector.create_session(options, secret_data, schema)
         self._check_task_options(task_options)
 
@@ -79,7 +80,9 @@ class CostManager(BaseManager):
                 for results in response_stream:
                     yield self._make_cost_data(results, account_id)
 
-        yield []
+        yield {
+            'results': []
+        }
 
     def _update_sync_state(self, options, secret_data, schema, service_account_id):
         self.space_connector.init_client(options, secret_data, schema)
@@ -156,13 +159,9 @@ class CostManager(BaseManager):
 
             costs_data.append(data)
 
-            # Excluded because schema validation is too slow
-            # cost_data = Cost(data)
-            # cost_data.validate()
-            #
-            # costs_data.append(cost_data.to_primitive())
-
-        return costs_data
+        return {
+            'results': costs_data
+        }
 
     @staticmethod
     def _get_tags_from_cost_data(cost_data: dict) -> dict:

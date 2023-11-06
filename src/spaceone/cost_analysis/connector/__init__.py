@@ -1,2 +1,0 @@
-from spaceone.cost_analysis.connector.spaceone_connector import SpaceONEConnector
-from spaceone.cost_analysis.connector.aws_s3_connector import AWSS3Connector

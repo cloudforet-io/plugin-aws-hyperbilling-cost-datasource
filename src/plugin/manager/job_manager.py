@@ -3,8 +3,7 @@ from datetime import datetime, timedelta
 
 from spaceone.core.error import *
 from spaceone.core.manager import BaseManager
-from spaceone.cost_analysis.connector.spaceone_connector import SpaceONEConnector
-from spaceone.cost_analysis.model.job_model import Tasks
+from ..connector.spaceone_connector import SpaceONEConnector
 
 _LOGGER = logging.getLogger(__name__)
 _DEFAULT_DATABASE = 'MZC'
@@ -14,9 +13,10 @@ class JobManager(BaseManager):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.space_connector: SpaceONEConnector = self.locator.get_connector('SpaceONEConnector')
+        self.space_connector = SpaceONEConnector()
 
-    def get_tasks(self, options, secret_data, schema, start, last_synchronized_at, domain_id):
+    def get_tasks(self, domain_id: str, options: dict, secret_data: dict, schema: str = None, start: str = None,
+                  last_synchronized_at: datetime = None) -> dict:
         tasks = []
         changed = []
 
@@ -74,11 +74,6 @@ class JobManager(BaseManager):
 
             _LOGGER.debug(f'[get_tasks] tasks: {tasks}')
             _LOGGER.debug(f'[get_tasks] changed: {changed}')
-
-            tasks = Tasks({'tasks': tasks, 'changed': changed})
-
-            tasks.validate()
-            return tasks.to_primitive()
 
         else:
             _LOGGER.debug(f'[get_tasks] no project: tags.domain_id = {domain_id}')

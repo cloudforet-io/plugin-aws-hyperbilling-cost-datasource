@@ -6,7 +6,7 @@ import numpy as np
 
 from spaceone.core import utils
 from spaceone.core.connector import BaseConnector
-from spaceone.cost_analysis.error import *
+from spaceone.core.error import *
 
 __all__ = ['AWSS3Connector']
 

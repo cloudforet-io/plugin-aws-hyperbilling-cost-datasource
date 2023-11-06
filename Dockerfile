@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM cloudforet/python-core:2.0
 
 ENV PYTHONUNBUFFERED 1
 ENV SPACEONE_PORT 50051
@@ -13,15 +13,11 @@ COPY pkg/*.txt ${PKG_DIR}/
 RUN pip install --upgrade pip && \
     pip install --upgrade -r ${PKG_DIR}/pip_requirements.txt
 
-ARG CACHEBUST=1
-RUN pip install --upgrade --pre spaceone-core spaceone-api
-
 COPY src ${SRC_DIR}
 WORKDIR ${SRC_DIR}
-RUN python3 setup.py install && \
-    rm -rf /tmp/*
+RUN python3 setup.py install && rm -rf /tmp/*
 
 EXPOSE ${SPACEONE_PORT}
 
 ENTRYPOINT ["spaceone"]
-CMD ["grpc", "spaceone.cost_analysis"]
+CMD ["run", "plugin-server", "plugin"]

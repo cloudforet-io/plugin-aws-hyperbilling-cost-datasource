@@ -1,12 +1,11 @@
 import logging
 import re
 import requests
-from requests import HTTPError
 from google.protobuf.json_format import MessageToDict
 
 from spaceone.core.connector.space_connector import SpaceConnector
 from spaceone.core.connector import BaseConnector
-from spaceone.cost_analysis.error import *
+from spaceone.core.error import *
 
 __all__ = ['SpaceONEConnector']
 
@@ -96,7 +95,7 @@ class SpaceONEConnector(BaseConnector):
         response = requests.post(url, json=params, headers=headers)
 
         if response.status_code >= 400:
-            raise HTTPError(f'HTTP {response.status_code} Error: {response.json()["detail"]}')
+            raise requests.HTTPError(f'HTTP {response.status_code} Error: {response.json()["detail"]}')
 
         response = response.json()
         return response
