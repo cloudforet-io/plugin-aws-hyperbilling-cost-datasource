@@ -1,0 +1,13 @@
+name: "[Push] Build dev"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  none:
+    run-on: ubuntu-latest
+    steps:
+      - name: none
+        run: echo "This is deprecated."
+        
+# deprecated workflow
