@@ -18,15 +18,13 @@ class SpaceONEConnector(BaseConnector):
         super().__init__(*args, **kwargs)
         self.grpc_client = None
         self.token = None
-        self.billing_domain_id = None
         self.protocol = None
         self.endpoint = None
 
     def init_client(self, options: dict, secret_data: dict, schema: str = None) -> None:
         self._check_secret_data(secret_data)
         spaceone_endpoint = secret_data['spaceone_endpoint']
-        self.billing_domain_id = secret_data['spaceone_domain_id']
-        self.token = secret_data['spaceone_api_key']
+        self.token = secret_data['spaceone_client_secret']
 
         if spaceone_endpoint.startswith('http') or spaceone_endpoint.startswith('https'):
             self.protocol = 'http'
@@ -35,9 +33,16 @@ class SpaceONEConnector(BaseConnector):
             self.protocol = 'grpc'
             self.grpc_client: SpaceConnector = SpaceConnector(endpoint=spaceone_endpoint, token=self.token)
 
-    def verify_plugin(self):
-        method = 'Domain.get'
-        self.dispatch(method, {'domain_id': self.billing_domain_id})
+    def verify_plugin(self, domain_id: str) -> None:
+        method = 'Project.list'
+        params = {
+            "query": {
+                "filter": [
+                    {"k": "tags.domain_id", "v": domain_id, "o": "eq"}
+                ]
+            }
+        }
+        self.dispatch(method, params)
 
     def list_projects(self, domain_id: str):
         params = {
@@ -45,16 +50,14 @@ class SpaceONEConnector(BaseConnector):
                 'filter': [
                     {'k': 'tags.domain_id', 'v': domain_id, 'o': 'eq'}
                 ]
-            },
-            'domain_id': self.billing_domain_id
+            }
         }
 
         return self.dispatch('Project.list', params)
 
     def get_service_account(self, service_account_id):
         params = {
-            'service_account_id': service_account_id,
-            'domain_id': self.billing_domain_id
+            'service_account_id': service_account_id
         }
 
         return self.dispatch('ServiceAccount.update', params)
@@ -62,8 +65,7 @@ class SpaceONEConnector(BaseConnector):
     def update_service_account(self, service_account_id, tags):
         params = {
             'service_account_id': service_account_id,
-            'tags': tags,
-            'domain_id': self.billing_domain_id
+            'tags': tags
         }
 
         return self.dispatch('ServiceAccount.update', params)
@@ -71,9 +73,7 @@ class SpaceONEConnector(BaseConnector):
     def list_service_accounts(self, project_id: str):
         params = {
             'provider': 'aws',
-            'service_account_type': 'GENERAL',
-            'project_id': project_id,
-            'domain_id': self.billing_domain_id
+            'project_id': project_id
         }
 
         return self.dispatch('ServiceAccount.list', params)
@@ -124,8 +124,5 @@ class SpaceONEConnector(BaseConnector):
         if 'spaceone_endpoint' not in secret_data:
             raise ERROR_REQUIRED_PARAMETER(key='secret_data.spaceone_endpoint')
 
-        if 'spaceone_api_key' not in secret_data:
-            raise ERROR_REQUIRED_PARAMETER(key='secret_data.spaceone_api_key')
-
-        if 'spaceone_domain_id' not in secret_data:
-            raise ERROR_REQUIRED_PARAMETER(key='secret_data.spaceone_domain_id')
+        if 'spaceone_client_secret' not in secret_data:
+            raise ERROR_REQUIRED_PARAMETER(key='secret_data.spaceone_client_secret')

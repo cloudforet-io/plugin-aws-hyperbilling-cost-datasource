@@ -37,7 +37,7 @@ def data_source_verify(params: dict) -> None:
             'options': 'dict',      # Required
             'secret_data': 'dict',  # Required
             'schema': 'str',
-            'domain_id': 'str'
+            'domain_id': 'str'      # Required
         }
 
     Returns:
@@ -46,10 +46,11 @@ def data_source_verify(params: dict) -> None:
 
     options = params['options']
     secret_data = params['secret_data']
+    domain_id = params.get('domain_id')
     schema = params.get('schema')
 
     data_source_mgr = DataSourceManager()
-    data_source_mgr.verify_plugin(options, secret_data, schema)
+    data_source_mgr.verify_plugin(options, secret_data, domain_id, schema)
 
 
 @app.route('Job.get_tasks')
@@ -63,7 +64,7 @@ def job_get_tasks(params: dict) -> dict:
             'schema': 'str',
             'start': 'str',
             'last_synchronized_at': 'datetime',
-            'domain_id': 'str'
+            'domain_id': 'str'      # Required
         }
 
     Returns:
@@ -95,7 +96,7 @@ def cost_get_data(params: dict) -> Generator[dict, None, None]:
             'secret_data': 'dict',  # Required
             'schema': 'str',
             'task_options': 'dict',
-            'domain_id': 'str'
+            'domain_id': 'str'      # Required
         }
 
     Returns:

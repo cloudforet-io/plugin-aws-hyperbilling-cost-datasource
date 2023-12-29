@@ -34,11 +34,12 @@ class JobManager(BaseManager):
 
             response = self.space_connector.list_service_accounts(project_id)
             for service_account_info in response.get('results', []):
+                service_account_tags = service_account_info.get('tags', {})
                 service_account_id = service_account_info['service_account_id']
                 service_account_name = service_account_info['name']
                 account_id = service_account_info['data']['account_id']
-                is_sync = service_account_info['tags'].get('is_sync', 'false')
-                database = service_account_info['tags'].get('database', database)
+                is_sync = service_account_tags.get('is_sync', 'false')
+                database = service_account_tags.get('database', database)
 
                 if is_sync != 'true':
                     is_sync = 'false'
