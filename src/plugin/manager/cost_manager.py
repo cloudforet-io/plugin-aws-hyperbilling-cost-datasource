@@ -117,7 +117,7 @@ class CostManager(BaseManager):
                 service_code = result['service_code']
                 usage_type = result['usage_type']
                 data = {
-                    'cost': result['usage_cost'],
+                    'cost': result.get('usage_cost', 0.0) or 0.0,
                     'usage_quantity': result['usage_quantity'],
                     'usage_unit': None,
                     'provider': 'aws',
