@@ -60,7 +60,7 @@ class SpaceONEConnector(BaseConnector):
             'service_account_id': service_account_id
         }
 
-        return self.dispatch('ServiceAccount.update', params)
+        return self.dispatch('ServiceAccount.get', params)
 
     def update_service_account(self, service_account_id, tags):
         params = {
