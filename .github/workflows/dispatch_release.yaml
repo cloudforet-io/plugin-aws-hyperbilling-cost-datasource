@@ -70,7 +70,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.PAT_TOKEN }}
-          branch: master
+          branch: ${{ github.ref }}
       - name: notice when job fails
         if: failure()
         uses: 8398a7/action-slack@v3.2.0
