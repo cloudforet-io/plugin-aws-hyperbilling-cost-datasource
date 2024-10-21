@@ -2,16 +2,16 @@ from schematics.models import Model
 from schematics.types import ListType, IntType, DateTimeType, StringType, DictType
 from schematics.types.compound import ModelType
 
-__all__ = ['Tasks']
+__all__ = ["Tasks"]
 
 
 class TaskOptions(Model):
     start = StringType(required=True)
-    service_account_id = StringType(required=True)
-    service_account_name = StringType(required=True)
+    service_account_id = StringType()
+    service_account_name = StringType()
     account_id = StringType(required=True)
     database = StringType(required=True)
-    is_sync = StringType(required=True, choices=('true', 'false'))
+    is_sync = StringType(required=True, choices=("true", "false"))
 
 
 class Task(Model):

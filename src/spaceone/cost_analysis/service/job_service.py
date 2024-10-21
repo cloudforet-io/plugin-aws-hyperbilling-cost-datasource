@@ -14,11 +14,13 @@ class JobService(BaseService):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.job_mgr: JobManager = self.locator.get_manager('JobManager')
+        self.job_mgr: JobManager = self.locator.get_manager("JobManager")
 
     @transaction
-    @check_required(['options', 'secret_data'])
-    @change_timestamp_value(['start', 'last_synchronized_at'], timestamp_format='iso8601')
+    @check_required(["options", "secret_data"])
+    @change_timestamp_value(
+        ["start", "last_synchronized_at"], timestamp_format="iso8601"
+    )
     def get_tasks(self, params):
         """Get Job Tasks
 
@@ -37,11 +39,19 @@ class JobService(BaseService):
 
         """
 
-        options = params['options']
-        secret_data = params['secret_data']
-        schema = params.get('schema')
-        start = params.get('start')
-        last_synchronized_at = params.get('last_synchronized_at')
-        domain_id = params['domain_id']
+        options = params["options"]
+        secret_data = params["secret_data"]
+        schema = params.get("schema")
+        start = params.get("start")
+        last_synchronized_at = params.get("last_synchronized_at")
+        domain_id = params["domain_id"]
+        task_type = options.get("task_type", "identity")
 
-        return self.job_mgr.get_tasks(options, secret_data, schema, start, last_synchronized_at, domain_id)
+        if task_type == "identity":
+            return self.job_mgr.get_tasks(
+                options, secret_data, schema, start, last_synchronized_at, domain_id
+            )
+        else:
+            return self.job_mgr.get_tasks_directory_type(
+                options, secret_data, schema, start, last_synchronized_at, domain_id
+            )

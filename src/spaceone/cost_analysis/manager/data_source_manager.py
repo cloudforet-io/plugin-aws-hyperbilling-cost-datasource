@@ -15,14 +15,16 @@ class DataSourceManager(BaseManager):
         plugin_metadata = PluginMetadata()
         plugin_metadata.validate()
 
-        return {
-            'metadata': plugin_metadata.to_primitive()
-        }
+        return {"metadata": plugin_metadata.to_primitive()}
 
     def verify_plugin(self, options, secret_data, schema):
-        space_connector: SpaceONEConnector = self.locator.get_connector('SpaceONEConnector')
-        space_connector.init_client(options, secret_data, schema)
-        space_connector.verify_plugin()
+        task_type = options.get("task_type", "identity")
+        if task_type == "identity":
+            space_connector: SpaceONEConnector = self.locator.get_connector(
+                "SpaceONEConnector"
+            )
+            space_connector.init_client(options, secret_data, schema)
+            space_connector.verify_plugin()
 
-        aws_s3_connector: AWSS3Connector = self.locator.get_connector('AWSS3Connector')
+        aws_s3_connector: AWSS3Connector = self.locator.get_connector("AWSS3Connector")
         aws_s3_connector.create_session(options, secret_data, schema)
