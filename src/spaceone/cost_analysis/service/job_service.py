@@ -45,7 +45,7 @@ class JobService(BaseService):
         start = params.get("start")
         last_synchronized_at = params.get("last_synchronized_at")
         domain_id = params["domain_id"]
-        task_type = options.get("task_type", "identity")
+        task_type = options.get("task_type", "directory")
 
         if task_type == "identity":
             return self.job_mgr.get_tasks(
