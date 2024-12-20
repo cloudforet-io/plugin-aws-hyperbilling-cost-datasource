@@ -7,9 +7,9 @@ from .manager.cost_manager import CostManager
 app = DataSourcePluginServer()
 
 
-@app.route('DataSource.init')
+@app.route("DataSource.init")
 def data_source_init(params: dict) -> dict:
-    """ init plugin by options
+    """init plugin by options
 
     Args:
         params (DataSourceInitRequest): {
@@ -22,15 +22,15 @@ def data_source_init(params: dict) -> dict:
             'metadata': 'dict'
         }
     """
-    options = params['options']
+    options = params["options"]
 
     data_source_mgr = DataSourceManager()
     return data_source_mgr.init_response(options)
 
 
-@app.route('DataSource.verify')
+@app.route("DataSource.verify")
 def data_source_verify(params: dict) -> None:
-    """ Verifying data source plugin
+    """Verifying data source plugin
 
     Args:
         params (CollectorVerifyRequest): {
@@ -44,18 +44,18 @@ def data_source_verify(params: dict) -> None:
         None
     """
 
-    options = params['options']
-    secret_data = params['secret_data']
-    domain_id = params.get('domain_id')
-    schema = params.get('schema')
+    options = params["options"]
+    secret_data = params["secret_data"]
+    domain_id = params.get("domain_id")
+    schema = params.get("schema")
 
     data_source_mgr = DataSourceManager()
     data_source_mgr.verify_plugin(options, secret_data, domain_id, schema)
 
 
-@app.route('Job.get_tasks')
+@app.route("Job.get_tasks")
 def job_get_tasks(params: dict) -> dict:
-    """ Get job tasks
+    """Get job tasks
 
     Args:
         params (JobGetTaskRequest): {
@@ -75,20 +75,29 @@ def job_get_tasks(params: dict) -> dict:
 
     """
 
-    domain_id = params['domain_id']
-    options = params['options']
-    secret_data = params['secret_data']
-    schema = params.get('schema')
-    start = params.get('start')
-    last_synchronized_at = params.get('last_synchronized_at')
+    domain_id = params["domain_id"]
+    options = params["options"]
+    secret_data = params["secret_data"]
+    schema = params.get("schema")
+    start = params.get("start")
+    last_synchronized_at = params.get("last_synchronized_at")
 
     job_mgr = JobManager()
-    return job_mgr.get_tasks(domain_id, options, secret_data, schema, start, last_synchronized_at)
+    task_type = options.get("task_type", "identity")
+
+    if task_type == "identity":
+        return job_mgr.get_tasks(
+            domain_id, options, secret_data, schema, start, last_synchronized_at
+        )
+    else:
+        return job_mgr.get_tasks_directory_type(
+            domain_id, options, secret_data, schema, start, last_synchronized_at
+        )
 
 
-@app.route('Cost.get_data')
+@app.route("Cost.get_data")
 def cost_get_data(params: dict) -> Generator[dict, None, None]:
-    """ Get external cost data
+    """Get external cost data
 
     Args:
         params (CostGetDataRequest): {
@@ -117,11 +126,11 @@ def cost_get_data(params: dict) -> Generator[dict, None, None]:
         }
     """
 
-    options = params['options']
-    secret_data = params['secret_data']
+    options = params["options"]
+    secret_data = params["secret_data"]
 
-    task_options = params.get('task_options', {})
-    schema = params.get('schema')
+    task_options = params.get("task_options", {})
+    schema = params.get("schema")
 
     cost_mgr = CostManager()
     return cost_mgr.get_data(options, secret_data, task_options, schema)
