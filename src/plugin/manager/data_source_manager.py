@@ -38,9 +38,11 @@ class DataSourceManager(BaseManager):
     def verify_plugin(
         options: dict, secret_data: dict, domain_id: str, schema: str = None
     ) -> None:
-        space_connector = SpaceONEConnector()
-        space_connector.init_client(options, secret_data, schema)
-        space_connector.verify_plugin(domain_id)
+        task_type = options.get("task_type", "identity")
+        if task_type == "identity":
+            space_connector = SpaceONEConnector()
+            space_connector.init_client(options, secret_data, schema)
+            space_connector.verify_plugin(domain_id)
 
         aws_s3_connector = AWSS3Connector()
         aws_s3_connector.create_session(options, secret_data, schema)
