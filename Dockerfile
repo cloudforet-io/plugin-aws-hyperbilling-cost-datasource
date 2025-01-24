@@ -12,7 +12,7 @@ COPY pkg/*.txt ${PKG_DIR}/
 
 RUN pip install --upgrade pip && \
     pip install --upgrade -r ${PKG_DIR}/pip_requirements.txt && \
-    pip install --upgrade --pre spaceone-cost-analysis==2.0.dev128
+    pip install --upgrade --pre spaceone-cost-analysis==2.0.dev204
 
 COPY src ${SRC_DIR}
 WORKDIR ${SRC_DIR}

@@ -7,7 +7,7 @@ from spaceone.core.manager import BaseManager
 from ..connector.aws_s3_connector import AWSS3Connector
 from ..connector.spaceone_connector import SpaceONEConnector
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger("spaceone")
 _DEFAULT_DATABASE = "MZC"
 
 
@@ -72,16 +72,18 @@ class JobManager(BaseManager):
                     first_sync_month = self._get_start_month(options, start)
                     task_options["start"] = first_sync_month
 
-                    changed.append(
-                        {
-                            "start": first_sync_month,
-                            "filter": {"additional_info.Account ID": account_id},
-                        }
-                    )
+                    task_changed = {
+                        "start": first_sync_month,
+                        "filter": {"additional_info.Account ID": account_id},
+                    }
+
                 else:
                     task_options["start"] = start_month
+                    task_changed = {"start": start_month}
 
-                tasks.append({"task_options": task_options})
+                tasks.append(
+                    {"task_options": task_options, "task_changed": task_changed}
+                )
 
             changed.append({"start": start_month})
 
@@ -133,7 +135,8 @@ class JobManager(BaseManager):
                 "is_sync": "true",
                 "task_type": "directory",
             }
-            tasks.append({"task_options": task_options})
+            task_changed = {"start": start_month}
+            tasks.append({"task_options": task_options, "task_changed": task_changed})
 
         changed.append({"start": start_month})
 
