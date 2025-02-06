@@ -135,7 +135,10 @@ class JobManager(BaseManager):
                 "is_sync": "true",
                 "task_type": "directory",
             }
-            task_changed = {"start": start_month}
+            task_changed = {
+                "start": start_month,
+                "filter": {"additional_info.Account ID": account_id},
+            }
             tasks.append({"task_options": task_options, "task_changed": task_changed})
 
         changed.append({"start": start_month})
