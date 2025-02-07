@@ -9,6 +9,7 @@ from ..connector.spaceone_connector import SpaceONEConnector
 
 _LOGGER = logging.getLogger("spaceone")
 _DEFAULT_DATABASE = "MZC"
+_DEFAULT_RESYNC_DAYS = 10
 
 
 class JobManager(BaseManager):
@@ -154,7 +155,9 @@ class JobManager(BaseManager):
         start: str = None,
         last_synchronized_at: datetime = None,
     ) -> str:
-        resync_days = options.get("resync_days_from_last_synced_at", 7)
+        resync_days = options.get(
+            "resync_days_from_last_synced_at", _DEFAULT_RESYNC_DAYS
+        )
 
         if start:
             start_time: datetime = self._parse_start_time(start)
