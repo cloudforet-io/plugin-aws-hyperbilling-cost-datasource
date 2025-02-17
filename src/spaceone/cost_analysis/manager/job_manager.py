@@ -124,7 +124,6 @@ class JobManager(BaseManager):
                 "start": start_date,
                 "is_sync": "true",
             }
-            task_options["start"] = start_date
             tasks.append({"task_options": task_options})
 
         changed.append({"start": changed_time})
