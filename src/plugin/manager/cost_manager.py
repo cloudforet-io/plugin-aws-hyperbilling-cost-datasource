@@ -175,6 +175,9 @@ class CostManager(BaseManager):
             try:
                 tags_dict: dict = utils.load_json(tags_str)
                 for key, value in tags_dict.items():
+                    # todo: remove this condition after fixing the issue
+                    if "." in key:
+                        continue
                     key = key.replace("user:", "")
                     tags[key] = value
             except Exception as e:
