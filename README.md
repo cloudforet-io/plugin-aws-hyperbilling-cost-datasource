@@ -27,4 +27,4 @@ Plugin for collecting AWS HyperBilling data
 </pre>
 
 ## Options
-Currently, not required.
+*Example*

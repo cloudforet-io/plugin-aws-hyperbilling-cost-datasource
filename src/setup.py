@@ -16,25 +16,25 @@
 
 from setuptools import setup, find_packages
 
-with open('VERSION', 'r') as f: 
+with open("VERSION", "r") as f:
     VERSION = f.read().strip()
     f.close()
 
 setup(
-    name='plugin-aws-hyperbilling-cost-datasource',
+    name="plugin-aws-hyperbilling-cost-datasource",
     version=VERSION,
-    description='Data source plugin for AWS HyperBilling',
-    long_description='',
-    url='https://www.spaceone.dev/',
-    author='MEGAZONE SpaceONE Team',
-    author_email='admin@spaceone.dev',
-    license='Apache License 2.0',
+    description="Data source plugin for AWS HyperBilling",
+    long_description="",
+    url="https://www.spaceone.dev/",
+    author="MEGAZONE SpaceONE Team",
+    author_email="admin@spaceone.dev",
+    license="Apache License 2.0",
     packages=find_packages(),
     install_requires=[
-        'spaceone-core',
-        'spaceone-api',
-        'spaceone-cost-analysis',
-        'pyarrow'
+        "spaceone-core",
+        "spaceone-api",
+        "spaceone-cost-analysis==2.0.dev204",
+        "pyarrow",
     ],
     zip_safe=False,
 )
