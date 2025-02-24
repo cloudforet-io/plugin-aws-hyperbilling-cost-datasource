@@ -21,4 +21,4 @@ RUN python3 setup.py install && rm -rf /tmp/*
 EXPOSE ${SPACEONE_PORT}
 
 ENTRYPOINT ["spaceone"]
-CMD ["run", "plugin-server", "plugin", "-w", "12"]
+CMD ["run", "plugin-server", "plugin", "-w", "100"]
