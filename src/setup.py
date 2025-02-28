@@ -32,7 +32,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "spaceone-core==1.12.24",
-        "spaceone-api==1.12.19",
+        "spaceone-api==1.12.19.5",
         "schematics==2.1.1",
         "requests==2.31.0",
         "boto3==1.26.157",

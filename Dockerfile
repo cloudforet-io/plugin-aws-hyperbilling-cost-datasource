@@ -7,6 +7,7 @@ ENV PKG_DIR=/tmp/pkg
 ENV SRC_DIR=/tmp/src
 
 RUN apt update && apt upgrade -y
+RUN apt-get install gcc python3-dev -y
 
 COPY pkg/*.txt ${PKG_DIR}/
 
@@ -14,7 +15,7 @@ RUN pip install --upgrade pip && \
     pip install --upgrade -r ${PKG_DIR}/pip_requirements.txt
 
 ARG CACHEBUST=1
-RUN pip install --upgrade --pre spaceone-core==1.12.24 spaceone-api==1.12.19.1
+RUN pip install --upgrade --pre spaceone-core==1.12.24 spaceone-api==1.12.19.5
 
 COPY src ${SRC_DIR}
 WORKDIR ${SRC_DIR}
