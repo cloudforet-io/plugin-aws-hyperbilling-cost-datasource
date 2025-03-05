@@ -85,6 +85,10 @@ class CostManager(BaseManager):
             response = self.aws_s3_connector.list_objects(path)
             contents = response.get("Contents", [])
             for content in contents:
+                if content.get("Size", 0) == 0:
+                    _LOGGER.debug(f"[get_data] empty file: {content}")
+                    continue
+
                 response_stream = self.aws_s3_connector.get_cost_data(content["Key"])
                 for results in response_stream:
                     yield self._make_cost_data(results, account_id)
