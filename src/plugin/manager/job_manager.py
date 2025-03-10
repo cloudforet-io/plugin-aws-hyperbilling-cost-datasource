@@ -114,7 +114,7 @@ class JobManager(BaseManager):
         start_month: str = self._get_start_month(options, start, last_synchronized_at)
 
         database = options.get("database", _DEFAULT_DATABASE)
-        accounts = options.get("accounts", [])
+        accounts = secret_data.get("accounts", [])
 
         path = f"SPACE_ONE/billing/database={database}/"
 
