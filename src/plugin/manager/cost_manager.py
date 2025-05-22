@@ -66,6 +66,7 @@ class CostManager(BaseManager):
         account_id = task_options["account_id"]
         database = task_options["database"]
 
+        # update SpaceONE service account tags info
         if task_type == "identity":
             service_account_id = task_options["service_account_id"]
             is_sync = task_options["is_sync"]

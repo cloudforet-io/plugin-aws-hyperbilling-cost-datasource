@@ -89,7 +89,7 @@ def job_get_tasks(params: dict) -> dict:
         return job_mgr.get_tasks(
             domain_id, options, secret_data, schema, start, last_synchronized_at
         )
-    else:
+    else:  # 'directory' task_type
         return job_mgr.get_tasks_directory_type(
             domain_id, options, secret_data, schema, start, last_synchronized_at
         )

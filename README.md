@@ -28,3 +28,20 @@ Plugin for collecting AWS HyperBilling data
 
 ## Options
 *Example*
+currency: "USD"
+task_type: "identity" | "directory"
+resync_days: 7
+
+```json
+
+{
+  "task_type":  "string",
+  "currency": "string",
+  "resync_days": "int"
+  
+}
+
+
+```
+
+
