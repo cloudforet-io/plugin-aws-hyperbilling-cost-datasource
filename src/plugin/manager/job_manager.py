@@ -119,15 +119,20 @@ class JobManager(BaseManager):
         path = f"SPACE_ONE/billing/database={database}/"
 
         if not accounts:
-            response = aws_s3_connector.list_objects(path)
-            for content in response.get("Contents", []):
-                key = content["Key"]
-                account_id = key.split("/")[3].split("=")[-1]
+            response = aws_s3_connector.list_objects(path, delimiter="/")
+            path_length = len(path)
 
-                if account_id and not "":
-                    accounts.append(account_id)
+            for prefix in response.get("CommonPrefixes", []):
+                folder = prefix["Prefix"]
+                relative_path = folder[path_length:].lstrip("/")
 
-        accounts = list(set(accounts))
+                if relative_path:
+                    first_folder = relative_path.split("/")[0]
+                    if first_folder.startswith("account_id="):
+                        account_id = first_folder.split("=", 1)[-1]
+                        if account_id and account_id.strip():
+                            accounts.append(account_id)
+
         for account_id in accounts:
             task_options = {
                 "account_id": account_id,
