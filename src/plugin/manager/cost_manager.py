@@ -77,6 +77,8 @@ class CostManager(BaseManager):
 
         date_ranges = self._get_date_range(start)
 
+        include_credit = options.get("include_credit", True)
+
         for date in date_ranges:
             year, month = date.split("-")
             path = f"SPACE_ONE/billing/database={database}/account_id={account_id}/year={year}/month={month}"
@@ -85,7 +87,7 @@ class CostManager(BaseManager):
             for content in contents:
                 response_stream = self.aws_s3_connector.get_cost_data(content["Key"])
                 for results in response_stream:
-                    yield self._make_cost_data(results, account_id)
+                    yield self._make_cost_data(results, account_id, include_credit)
 
         yield {"results": []}
 
@@ -98,7 +100,7 @@ class CostManager(BaseManager):
         tags["is_sync"] = "true"
         self.space_connector.update_service_account(service_account_id, tags)
 
-    def _make_cost_data(self, results, account_id):
+    def _make_cost_data(self, results, account_id, include_credit):
         costs_data = []
 
         """ Source Data Model
@@ -123,6 +125,10 @@ class CostManager(BaseManager):
                 region = result["region"] or "USE1"
                 service_code = result["service_code"]
                 usage_type = result["usage_type"]
+
+                if not include_credit and service_code == "Credit":
+                    continue
+
                 data = {
                     "cost": result.get("usage_cost", 0.0) or 0.0,
                     "usage_quantity": result["usage_quantity"],
